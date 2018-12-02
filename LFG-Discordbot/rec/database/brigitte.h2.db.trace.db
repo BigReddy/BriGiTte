@@ -1,0 +1,118 @@
+2018-12-01 16:29:24 database: flush
+org.h2.message.DbException: Allgemeiner Fehler: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]"
+General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.message.DbException.convert(DbException.java:307)
+	at org.h2.mvstore.db.MVTableEngine$1.uncaughtException(MVTableEngine.java:95)
+	at org.h2.mvstore.MVStore.handleException(MVStore.java:2506)
+	at org.h2.mvstore.MVStore.panic(MVStore.java:383)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:364)
+	at org.h2.mvstore.MVStore$Builder.open(MVStore.java:2934)
+	at org.h2.mvstore.db.MVTableEngine$Store.open(MVTableEngine.java:155)
+	at org.h2.mvstore.db.MVTableEngine.init(MVTableEngine.java:100)
+	at org.h2.engine.Database.getPageStore(Database.java:2538)
+	at org.h2.engine.Database.open(Database.java:709)
+	at org.h2.engine.Database.openDatabase(Database.java:286)
+	at org.h2.engine.Database.<init>(Database.java:280)
+	at org.h2.engine.Engine.openSession(Engine.java:66)
+	at org.h2.engine.Engine.openSession(Engine.java:179)
+	at org.h2.engine.Engine.createSessionAndValidate(Engine.java:157)
+	at org.h2.engine.Engine.createSession(Engine.java:140)
+	at org.h2.engine.Engine.createSession(Engine.java:28)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:351)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:103)
+	at org.h2.Driver.connect(Driver.java:69)
+	at java.sql.DriverManager.getConnection(Unknown Source)
+	at java.sql.DriverManager.getConnection(Unknown Source)
+	at com.j256.ormlite.jdbc.JdbcConnectionSource.makeConnection(JdbcConnectionSource.java:266)
+	at com.j256.ormlite.jdbc.JdbcConnectionSource.getReadWriteConnection(JdbcConnectionSource.java:187)
+	at com.j256.ormlite.table.TableUtils.doCreateTable(TableUtils.java:397)
+	at com.j256.ormlite.table.TableUtils.doCreateTable(TableUtils.java:383)
+	at com.j256.ormlite.table.TableUtils.createTableIfNotExists(TableUtils.java:75)
+	at de.big_reddy.brigitte.Main.main(Main.java:37)
+Caused by: org.h2.jdbc.JdbcSQLException: Allgemeiner Fehler: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]"
+General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	... 30 more
+Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]
+	at org.h2.mvstore.DataUtils.newIllegalStateException(DataUtils.java:870)
+	at org.h2.mvstore.FileStore.open(FileStore.java:173)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:350)
+	... 24 more
+2018-12-02 05:13:34 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Tabelle "SEARCHES" nicht gefunden
+Table "SEARCHES" not found; SQL statement:
+SELECT * FROM `searches` WHERE `lastUpdate` <= ?  [42102-197]
+2018-12-02 05:14:56 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Feld "LASTUPDATE" nicht gefunden
+Column "LASTUPDATE" not found; SQL statement:
+SELECT * FROM `players` WHERE `lastUpdate` <= ?  [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.expression.Comparison.optimize(Comparison.java:177)
+	at org.h2.command.dml.Select.prepare(Select.java:861)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:76)
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:694)
+	at com.j256.ormlite.jdbc.JdbcDatabaseConnection.compileStatement(JdbcDatabaseConnection.java:147)
+	at com.j256.ormlite.stmt.mapped.MappedPreparedStmt.compile(MappedPreparedStmt.java:56)
+	at com.j256.ormlite.stmt.StatementExecutor.buildIterator(StatementExecutor.java:246)
+	at com.j256.ormlite.stmt.StatementExecutor.query(StatementExecutor.java:197)
+	at com.j256.ormlite.dao.BaseDaoImpl.query(BaseDaoImpl.java:278)
+	at de.big_reddy.brigitte.data.DatabaseManager.getExpiredEntrys(DatabaseManager.java:209)
+	at de.big_reddy.brigitte.Main.dbCleanUp(Main.java:72)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask.runAndReset(Unknown Source)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(Unknown Source)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+2018-12-02 05:25:22 database: flush
+org.h2.message.DbException: Allgemeiner Fehler: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]"
+General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.message.DbException.convert(DbException.java:307)
+	at org.h2.mvstore.db.MVTableEngine$1.uncaughtException(MVTableEngine.java:95)
+	at org.h2.mvstore.MVStore.handleException(MVStore.java:2506)
+	at org.h2.mvstore.MVStore.panic(MVStore.java:383)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:364)
+	at org.h2.mvstore.MVStore$Builder.open(MVStore.java:2934)
+	at org.h2.mvstore.db.MVTableEngine$Store.open(MVTableEngine.java:155)
+	at org.h2.mvstore.db.MVTableEngine.init(MVTableEngine.java:100)
+	at org.h2.engine.Database.getPageStore(Database.java:2538)
+	at org.h2.engine.Database.open(Database.java:709)
+	at org.h2.engine.Database.openDatabase(Database.java:286)
+	at org.h2.engine.Database.<init>(Database.java:280)
+	at org.h2.engine.Engine.openSession(Engine.java:66)
+	at org.h2.engine.Engine.openSession(Engine.java:179)
+	at org.h2.engine.Engine.createSessionAndValidate(Engine.java:157)
+	at org.h2.engine.Engine.createSession(Engine.java:140)
+	at org.h2.engine.Engine.createSession(Engine.java:28)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:351)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:103)
+	at org.h2.Driver.connect(Driver.java:69)
+	at java.sql.DriverManager.getConnection(Unknown Source)
+	at java.sql.DriverManager.getConnection(Unknown Source)
+	at com.j256.ormlite.jdbc.JdbcConnectionSource.makeConnection(JdbcConnectionSource.java:266)
+	at com.j256.ormlite.jdbc.JdbcConnectionSource.getReadWriteConnection(JdbcConnectionSource.java:187)
+	at com.j256.ormlite.table.TableUtils.doCreateTable(TableUtils.java:397)
+	at com.j256.ormlite.table.TableUtils.doCreateTable(TableUtils.java:383)
+	at com.j256.ormlite.table.TableUtils.createTableIfNotExists(TableUtils.java:75)
+	at de.big_reddy.brigitte.Main.main(Main.java:43)
+Caused by: org.h2.jdbc.JdbcSQLException: Allgemeiner Fehler: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]"
+General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	... 30 more
+Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/rober/OneDrive/Dokumente/GitHub/LFG-Discordbot/LFG-Discordbot/rec/database/brigitte.h2.db.mv.db [1.4.197/7]
+	at org.h2.mvstore.DataUtils.newIllegalStateException(DataUtils.java:870)
+	at org.h2.mvstore.FileStore.open(FileStore.java:173)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:350)
+	... 24 more
