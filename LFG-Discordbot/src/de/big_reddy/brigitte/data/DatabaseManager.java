@@ -19,6 +19,7 @@ import com.j256.ormlite.support.ConnectionSource;
 
 import de.big_reddy.brigitte.data.models.Expirable;
 import de.big_reddy.brigitte.data.models.Player;
+import de.big_reddy.brigitte.data.models.Role;
 import de.big_reddy.brigitte.data.models.Search;
 
 /**
@@ -38,7 +39,7 @@ public class DatabaseManager {
     }
 
     private void initialForms() throws SQLException {
-        // Select all role
+        // Select all player
         {
             final QueryBuilder<Player, String> queryBuilder = this.playerDao.queryBuilder();
             this.querys.put("allPlayers", new QueryPair<>(queryBuilder.prepare()));
@@ -107,7 +108,7 @@ public class DatabaseManager {
             this.querys.put("searchQuery", new QueryPair<>(queryBuilder.prepare(), arg1));
             queryBuilder.reset();
         }
-        // Select all fitting searches
+        // Select all searches by user
         {
             final QueryBuilder<Search, String> queryBuilder = this.searchDao.queryBuilder();
             final Where<Search, String> where = queryBuilder.where();
@@ -155,6 +156,26 @@ public class DatabaseManager {
             e.printStackTrace();
             return Collections.emptyList();
         }
+    }
+
+    public List<Player> getPlayers(final Search search) {
+        final List<Object> values = new ArrayList<>();
+        String form;
+        if (search.getRole() == Role.ANY) {
+            form = "playersBySR";
+        } else {
+            form = "playersByRoleSR";
+            values.add(search.getRole());
+        }
+        if (search.getSr() == -1) {
+            search.setSr(0);
+            search.setRange(5000);
+            form = "playersByRole";
+        } else {
+            values.add(search.getMinSr());
+            values.add(search.getMaxSr());
+        }
+        return this.getPlayers(form, values.toArray());
     }
 
     public Player getPlayerByID(final String id) throws SQLException {
@@ -228,11 +249,25 @@ public class DatabaseManager {
         }
     }
 
+    public void deletePlayer(final String id) throws SQLException {
+        this.playerDao.deleteById(id);
+    }
+
+    public void deleteSearches(final String id) throws SQLException {
+        final QueryPair<Search> temp = this.querys.get("searchID");
+        temp.getRight()[0].setValue(id);
+        this.searchDao.query(temp.getLeft()).forEach(s -> {
+            try {
+                this.searchDao.delete(s);
+            } catch (final SQLException e) {}
+        });
+    }
+
     public static DatabaseManager inst() {
         return inst;
     }
 
-    public void deletePlayer(final String id) throws SQLException {
-        this.playerDao.deleteById(id);
+    public void createSearch(final Search search) throws SQLException {
+        this.searchDao.createIfNotExists(search);
     }
 }

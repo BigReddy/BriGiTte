@@ -5,6 +5,7 @@ public enum Role {
     DPS("dps"),
     SUPPORT("support"),
     FLEX("flex"),
+    ANY("any"),
     NONE("none");
 
     private final String identifier;
@@ -18,7 +19,8 @@ public enum Role {
         return this.identifier;
     }
 
-    public static Role getRoleByIdentifier(final String identifier) {
+    public static Role getRoleByIdentifier(String identifier) {
+        identifier = identifier.toLowerCase();
         switch (identifier) {
             case "tank":
                 return Role.TANK;

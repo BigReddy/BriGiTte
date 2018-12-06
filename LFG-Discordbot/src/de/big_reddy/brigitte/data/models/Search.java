@@ -9,16 +9,33 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "searches")
 public class Search implements Expirable {
+    @DatabaseField(id = true)
+    private int id;
     @DatabaseField
     private String userID;
     @DatabaseField
-    private Role role = Role.NONE;
+    private Role role = Role.ANY;
     @DatabaseField
-    private int sr;
+    private int sr = -1;
     @DatabaseField
     private int range = 300;
     @DatabaseField
     private Date lastUpdate = Date.valueOf(LocalDate.now());
+
+    /**
+     * @return the id
+     */
+    public int getId() {
+        return this.id;
+    }
+
+    /**
+     * @param id
+     *            the id to set
+     */
+    public void setId(final int id) {
+        this.id = id;
+    }
 
     /**
      * @return the userID
@@ -115,4 +132,10 @@ public class Search implements Expirable {
     public void setLastUpdate(final LocalDate lastUpdate) {
         this.lastUpdate = Date.valueOf(lastUpdate);
     }
+
+    @Override
+    public String toString() {
+        return String.format("***Role: ***%s\n***SR: ***%d - %d", this.role, this.getMinSr(), this.getMaxSr());
+    }
+
 }
