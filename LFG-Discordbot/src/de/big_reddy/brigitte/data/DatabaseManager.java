@@ -27,17 +27,43 @@ import de.big_reddy.brigitte.data.models.Search;
  *
  */
 public class DatabaseManager {
+    /**
+     * Instance of this singleton.
+     */
     private static DatabaseManager inst;
+    /**
+     * Database interface for interactions with {@link Player} table.
+     */
     private final Dao<Player, String> playerDao;
+    /**
+     * Database interface for interactions with {@link Search} table.
+     */
     private final Dao<Search, String> searchDao;
+    /**
+     * Map for named {@link QueryPair QueryPairs}. Used to easily access queries
+     * and their assigned {@link SelectArg}.
+     */
     private final Map<String, QueryPair> querys = new HashMap<>();
 
+    /**
+     * Constructor of this singleton.
+     *
+     * @param connectionSource
+     *            Database connection
+     * @throws SQLException
+     */
     private DatabaseManager(final ConnectionSource connectionSource) throws SQLException {
         this.playerDao = DaoManager.createDao(connectionSource, Player.class);
         this.searchDao = DaoManager.createDao(connectionSource, Search.class);
         this.initialForms();
     }
 
+    /**
+     * Initializes, prepares and registers all form further forms used for
+     * database queries.
+     *
+     * @throws SQLException
+     */
     private void initialForms() throws SQLException {
         // Select all player
         {
@@ -45,7 +71,7 @@ public class DatabaseManager {
             this.querys.put("allPlayers", new QueryPair<>(queryBuilder.prepare()));
             queryBuilder.reset();
         }
-        // Select by role
+        // Select players by role
         {
             final QueryBuilder<Player, String> queryBuilder = this.playerDao.queryBuilder();
             final Where<Player, String> where = queryBuilder.where();
@@ -54,7 +80,7 @@ public class DatabaseManager {
             this.querys.put("playersByRole", new QueryPair<>(queryBuilder.prepare(), arg));
             queryBuilder.reset();
         }
-        // Select by sr
+        // Select players by sr
         {
             final QueryBuilder<Player, String> queryBuilder = this.playerDao.queryBuilder();
             final Where<Player, String> where = queryBuilder.where();
@@ -64,7 +90,7 @@ public class DatabaseManager {
             this.querys.put("playersBySR", new QueryPair<>(queryBuilder.prepare(), arg1, arg2));
             queryBuilder.reset();
         }
-        // Select by role and sr
+        // Select players by role and sr
         {
             final QueryBuilder<Player, String> queryBuilder = this.playerDao.queryBuilder();
             final Where<Player, String> where = queryBuilder.where();
@@ -76,7 +102,7 @@ public class DatabaseManager {
             this.querys.put("playersByRoleSR", new QueryPair<>(queryBuilder.prepare(), arg1, arg2, arg3));
             queryBuilder.reset();
         }
-        // Select by all
+        // Select players by all
         {
             final QueryBuilder<Player, String> queryBuilder = this.playerDao.queryBuilder();
             final Where<Player, String> where = queryBuilder.where();
@@ -99,6 +125,7 @@ public class DatabaseManager {
             this.querys.put("playersExpired", new QueryPair<>(queryBuilder.prepare(), arg1));
             queryBuilder.reset();
         }
+
         // Select all fitting searches
         {
             final QueryBuilder<Search, String> queryBuilder = this.searchDao.queryBuilder();
@@ -129,6 +156,39 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Return instant of singleton.
+     *
+     * @return Instant of singleton
+     */
+    public static DatabaseManager inst() {
+        return inst;
+    }
+
+    /**
+     * Initialization of singleton.
+     *
+     * @param connectionSource
+     *            Database connection
+     * @throws IllegalArgumentException
+     *             Thrown if either connectionSource is not or
+     *             {@link DatabaseManager#inst} is set
+     * @throws SQLException
+     */
+    public static void init(final ConnectionSource connectionSource) throws IllegalArgumentException, SQLException {
+        if (connectionSource == null || inst != null) throw new IllegalArgumentException();
+        inst = new DatabaseManager(connectionSource);
+    }
+
+    /**
+     * Return database request according to given form and values.
+     *
+     * @param form
+     *            Pre-created form to use
+     * @param args
+     *            Arguments for said form
+     * @return List of players fitting given form and arguments
+     */
     public List<Player> getPlayers(final String form, final Object... args) {
         final QueryPair<Player> temp = this.querys.get(form);
 
@@ -144,21 +204,13 @@ public class DatabaseManager {
         }
     }
 
-    public List<Search> getSearches(final Player player) {
-        final QueryPair<Search> searchQuery = this.querys.get("searchQuery");
-        searchQuery.getRight()[0].setValue(player.getRole());
-        try {
-            return this.searchDao //
-                    .query(searchQuery.getLeft()) //
-                    .stream() //
-                    .filter(s -> s.isInRange(player.getSr())) //
-                    .collect(Collectors.toList());
-        } catch (final SQLException e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
+    /**
+     * Return list of {@link Player Players} applicable to given {@link Search}.
+     *
+     * @param search
+     *            Search matches requested.
+     * @return List of fitting players
+     */
     public List<Player> getPlayers(final Search search) {
         final List<Object> values = new ArrayList<>();
         String form;
@@ -180,44 +232,38 @@ public class DatabaseManager {
         return this.getPlayers(form, values.toArray());
     }
 
+    /**
+     * Return {@link Search Searches} suiting given player.
+     *
+     * @param player
+     *            Player to fit
+     * @return List of fitting Searches
+     */
+    public List<Search> getSearches(final Player player) {
+        final QueryPair<Search> searchQuery = this.querys.get("searchQuery");
+        searchQuery.getRight()[0].setValue(player.getRole());
+        try {
+            return this.searchDao //
+                    .query(searchQuery.getLeft()) //
+                    .stream() //
+                    .filter(s -> s.isInRange(player.getSr())) //
+                    .collect(Collectors.toList());
+        } catch (final SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
     public Player getPlayerByID(final String id) throws SQLException {
         return this.playerDao.createIfNotExists(new Player(id));
     }
 
-    public boolean updatePlayer(final Player player) {
-        try {
-            player.setLastUpdate(LocalDate.now());
-            this.playerDao.createOrUpdate(player);
-        } catch (final SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    public void update(final String id) {
-        try {
-            final Player p = this.playerDao.queryForId(id);
-            if (p != null) {
-                this.playerDao.update(p);
-            }
-            final QueryPair<Search> temp = this.querys.get("searchID");
-            temp.getRight()[0].setValue(id);
-
-            for (final Search s : this.searchDao.query(temp.getLeft())) {
-                s.setLastUpdate(LocalDate.now());
-                this.searchDao.update(s);
-            }
-        } catch (final SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void init(final ConnectionSource connectionSource) throws IllegalArgumentException, SQLException {
-        if (connectionSource == null || inst != null) throw new IllegalArgumentException();
-        inst = new DatabaseManager(connectionSource);
-    }
-
+    /**
+     * Check database for expiring data-sets, deleting (10 days) or returning (7
+     * days) untouched sets.
+     *
+     * @return Data-sets that will be deleted soon, if untouched
+     */
     public List<? extends Expirable> getExpiredEntrys() {
         try {
             final List<Expirable> returnV = new ArrayList<>();
@@ -251,10 +297,24 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Delete {@link Player}-Profile of player with given id.
+     *
+     * @param id
+     *            Discord-ID of user to remove from the database
+     * @throws SQLException
+     */
     public void deletePlayer(final String id) throws SQLException {
         this.playerDao.deleteById(id);
     }
 
+    /**
+     * Delete all {@link Search searches} created by given user id.
+     *
+     * @param id
+     *            Discord-ID of to delete searches
+     * @throws SQLException
+     */
     public void deleteSearches(final String id) throws SQLException {
         final QueryPair<Search> temp = this.querys.get("searchID");
         temp.getRight()[0].setValue(id);
@@ -265,11 +325,56 @@ public class DatabaseManager {
         });
     }
 
-    public static DatabaseManager inst() {
-        return inst;
+    /**
+     * Create {@link Player} or update if exists.
+     *
+     * @param player
+     *            Player to create/update
+     * @return If succeeded
+     */
+    public boolean updatePlayer(final Player player) {
+        try {
+            player.setLastUpdate(LocalDate.now());
+            this.playerDao.createOrUpdate(player);
+        } catch (final SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
+    /**
+     * Save a {@link Search} in the database.
+     *
+     * @param search
+     *            Search to save
+     * @throws SQLException
+     */
     public void createSearch(final Search search) throws SQLException {
         this.searchDao.createIfNotExists(search);
+    }
+
+    /**
+     * Refresh all update-dates associated with given Discord-ID.
+     * 
+     * @param id
+     *            Discord-ID to update
+     */
+    public void update(final String id) {
+        try {
+            final Player p = this.playerDao.queryForId(id);
+            if (p != null) {
+                this.playerDao.update(p);
+            }
+            final QueryPair<Search> temp = this.querys.get("searchID");
+            temp.getRight()[0].setValue(id);
+
+            for (final Search s : this.searchDao.query(temp.getLeft())) {
+                s.setLastUpdate(LocalDate.now());
+                this.searchDao.update(s);
+            }
+        } catch (final SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
