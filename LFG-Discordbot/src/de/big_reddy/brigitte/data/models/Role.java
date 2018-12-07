@@ -1,5 +1,10 @@
 package de.big_reddy.brigitte.data.models;
 
+/**
+ *
+ * @author Big_Reddy
+ *
+ */
 public enum Role {
     TANK("tank"),
     DPS("dps"),

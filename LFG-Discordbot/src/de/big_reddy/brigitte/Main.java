@@ -15,6 +15,11 @@ import de.big_reddy.brigitte.data.DatabaseManager;
 import de.big_reddy.brigitte.data.models.Player;
 import de.big_reddy.brigitte.data.models.Search;
 
+/**
+ *
+ * @author Big_Reddy
+ *
+ */
 public class Main {
 
     private static ScheduledExecutorService schedule;
@@ -29,6 +34,7 @@ public class Main {
      */
     public static void main(final String args[]) {
         if (args.length < 1) throw new Error("No bot token given!");
+        boolean dbReset = args.length > 1 && args[1].equals("reset");
         // Create bot
         bot = new LFGBot(args[0]);
 
@@ -38,8 +44,11 @@ public class Main {
             db.mkdirs();
             final String databaseUrl = "jdbc:h2:file:" + db.getAbsolutePath() + "/brigitte.h2.db";
             final ConnectionSource connectionSource = new JdbcConnectionSource(databaseUrl);
-            // TableUtils.dropTable(connectionSource, Player.class, true);
-            // TableUtils.dropTable(connectionSource, Search.class, true);
+            if (dbReset) {
+                TableUtils.dropTable(connectionSource, Player.class, true);
+                TableUtils.dropTable(connectionSource, Search.class, true);
+                dbReset = false;
+            }
             TableUtils.createTableIfNotExists(connectionSource, Player.class);
             TableUtils.createTableIfNotExists(connectionSource, Search.class);
             DatabaseManager.init(connectionSource);
@@ -58,7 +67,7 @@ public class Main {
                 switch (sc.nextLine()) {
                     case "exit":
                         bot.shutdown();
-                        return;
+                        break;
                     default:
                         System.out.println("Write >exit< to exit programm.");
                 }
@@ -67,7 +76,7 @@ public class Main {
     }
 
     /**
-     * Is called upon to clean the database for expired entrys.
+     * Is called upon to clean the database for expired entries.
      */
     private static void dbCleanUp() {
         DatabaseManager.inst() //
