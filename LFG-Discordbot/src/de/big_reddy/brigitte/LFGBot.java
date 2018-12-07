@@ -21,6 +21,11 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
 
+/**
+ *
+ * @author Big_Reddy
+ *
+ */
 public class LFGBot implements EventListener {
     private final JDABuilder builder = new JDABuilder(AccountType.BOT);
     private final JDA jda;
@@ -73,6 +78,7 @@ public class LFGBot implements EventListener {
         final String id = event.getAuthor().getId();
         final List<String> answer = new ArrayList<>();
 
+        //
         if (message.startsWith("!search")) {
             answer.add(this.onSearch(id, message.replaceFirst("!search\\s*", "")));
         } else if (message.startsWith("!update")) {
@@ -87,6 +93,8 @@ public class LFGBot implements EventListener {
             answer.add("Try !help");
         }
         final String reply = answer.stream().collect(Collectors.joining("\n"));
+
+        // Fail save
         if (reply.isEmpty()) return;
         event.getChannel().sendMessage(reply).queue();
     }
@@ -102,7 +110,8 @@ public class LFGBot implements EventListener {
         try {
             DatabaseManager.inst().deletePlayer(id);
             DatabaseManager.inst().deleteSearches(id);
-        } catch (final SQLException e) {
+        } catch (final SQLException e) { {
+            // Should never occur
             e.printStackTrace();
             return "***Could not delete entry.\nPlease contact administrator.***";
         }
@@ -182,7 +191,8 @@ public class LFGBot implements EventListener {
             try {
                 DatabaseManager.inst().deleteSearches(id);
                 return "*Search(es) deleted.*";
-            } catch (final SQLException e) {
+            } catch (final SQLException e) { {
+                // Should never occur
                 e.printStackTrace();
                 return "***Could not delete entry(s).\nPlease contact administrator.***";
             }
@@ -223,6 +233,7 @@ public class LFGBot implements EventListener {
         try {
             player = db.getPlayerByID(id);
         } catch (final SQLException e) {
+            // Should never occur
             e.printStackTrace();
             return "***Fatal error: user not found.***\n*Please contact administrator!*";
         }
@@ -261,9 +272,12 @@ public class LFGBot implements EventListener {
     }
 
     /**
+     * Send given message to Discord-User with given id.
      *
      * @param id
+     *            ID of Discord-User
      * @param message
+     *            Message to send
      */
     public void sendMessage(final String id, final String message) {
         try {
@@ -277,6 +291,12 @@ public class LFGBot implements EventListener {
         }
     }
 
+    /**
+     * Called upon on player profile update.
+     *
+     * @param player
+     *            Player that got updated
+     */
     private void onPlayerUpdate(final Player player) {
         DatabaseManager.inst() //
                 .getSearches(player) //
@@ -285,8 +305,23 @@ public class LFGBot implements EventListener {
                 .forEach(id -> this.sendMessage(id, "*New players of interest are available*"));
     }
 
+    /**
+     * Return help message.
+     *
+     * @return Message contend for help command
+     */
     private String help() {
-        return "Help";
+        return "__Player-Profile:__\n" //
+                + "!sr [0-5000] *Set your SR*\n" //
+                + "!role [support|tank|dps|flex] *Set your role*\n"//
+                + "\n" //
+                + "__Trainer-Profile:__\n" //
+                + "!search *Search for a player*\n" //
+                + "\t<-sr [0-5000]> *Searched SR (default all)*\n" //
+                + "\t<-range [0-5000]> *Searched SR range (default 300)*\n" //
+                + "\t<-role [...]> *Searched role (default any)*\n" //
+                + "\t<-notify> *Get notified if player of interest registers*\n" //
+                + "\t<-delete> *Delete all searches*\n";
     }
 
     /**

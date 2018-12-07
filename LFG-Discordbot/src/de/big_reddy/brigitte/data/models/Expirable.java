@@ -28,11 +28,12 @@ public interface Expirable {
     void setLastUpdate(final LocalDate lastUpdate);
 
     /**
+     * Return state of deprecation as follows: <br>
      * 0: not expired <br>
      * 1: expired <br>
      * 2: free to delete
      *
-     * @return status of deprecation
+     * @return Status of deprecation
      */
     default int isExpired() {
         int state = 0;

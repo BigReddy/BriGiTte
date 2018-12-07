@@ -7,6 +7,11 @@ import java.time.format.DateTimeFormatter;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+/**
+ *
+ * @author Big_Reddy
+ *
+ */
 @DatabaseTable(tableName = "searches")
 public class Search implements Expirable {
     @DatabaseField(id = true)
@@ -112,6 +117,14 @@ public class Search implements Expirable {
         return this.sr - this.range;
     }
 
+    /**
+     * Return if given sr is within {@link Search#getMinSr()} and
+     * {@link Search#getMaxSr()}.
+     *
+     * @param sr
+     *            SR to test
+     * @return If given sr is within range
+     */
     public boolean isInRange(final int sr) {
         return sr >= this.getMinSr() && sr <= this.getMaxSr();
     }

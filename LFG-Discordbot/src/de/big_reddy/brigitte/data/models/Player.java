@@ -7,6 +7,11 @@ import java.time.format.DateTimeFormatter;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+/**
+ *
+ * @author Big_Reddy
+ *
+ */
 @DatabaseTable(tableName = "players")
 public class Player implements Expirable {
     @DatabaseField(id = true)
