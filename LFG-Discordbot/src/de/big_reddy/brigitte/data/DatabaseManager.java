@@ -105,6 +105,7 @@ public class DatabaseManager {
             final Where<Search, String> where = queryBuilder.where();
             final SelectArg arg1 = new SelectArg();
             where.eq("role", arg1);
+            where.or().eq("role", Role.ANY);
             this.querys.put("searchQuery", new QueryPair<>(queryBuilder.prepare(), arg1));
             queryBuilder.reset();
         }
@@ -167,10 +168,11 @@ public class DatabaseManager {
             form = "playersByRoleSR";
             values.add(search.getRole());
         }
+
         if (search.getSr() == -1) {
             search.setSr(0);
             search.setRange(5000);
-            form = "playersByRole";
+            form = search.getRole() == Role.ANY ? "allPlayers" : "playersByRole";
         } else {
             values.add(search.getMinSr());
             values.add(search.getMaxSr());

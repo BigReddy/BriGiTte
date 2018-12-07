@@ -74,7 +74,7 @@ public class LFGBot implements EventListener {
         final List<String> answer = new ArrayList<>();
 
         if (message.startsWith("!search")) {
-            answer.add(this.onSearch(id, message));
+            answer.add(this.onSearch(id, message.replaceFirst("!search\\s*", "")));
         } else if (message.startsWith("!update")) {
             answer.add(this.update(id));
         } else if (message.startsWith("!delete")) {
@@ -88,7 +88,6 @@ public class LFGBot implements EventListener {
         }
         final String reply = answer.stream().collect(Collectors.joining("\n"));
         if (reply.isEmpty()) return;
-        this.sendMessage(id, reply);
         event.getChannel().sendMessage(reply).queue();
     }
 
@@ -135,24 +134,27 @@ public class LFGBot implements EventListener {
         search.setUserID(id);
         boolean save = false;
         boolean delete = false;
-        for (final String parameter : message.split("\\s*[-]")) {
+        for (final String parameter : message.split("\\s*-")) {
+            if (parameter.isEmpty()) {
+                continue;
+            }
             final String[] temp = parameter.split("\\s+", 2);
             switch (temp[0]) {
                 case "role":
                     if (temp.length < 2) return "-role *flag expects a role as second parameter, given non*";
                     final Role r = Role.getRoleByIdentifier(temp[1]);
-                    if (r == null) return temp[1] + "* is no valid role*";
+                    if (r == null) return temp[1] + " *is no valid role*";
                     search.setRole(r);
                     break;
                 case "sr":
                     try {
                         if (temp.length < 2)
-                            return "-sr *flag expects a number between *0 *and *5000 *as second parameter, given non*";
+                            return "-sr *flag expects a number between* 0 *and* 5000 *as second parameter, given non*";
                         final int sr = Integer.parseInt(temp[1]);
                         if (sr < 0 || sr > 5000) throw new IllegalArgumentException();
                         search.setSr(sr);
                     } catch (final IllegalArgumentException e) {
-                        return "-sr *flage expects a number between *0 *and *5000*, given *" + temp[1];
+                        return "-sr *flage expects a number between* 0 *and* 5000*, given* " + temp[1];
                     }
                     break;
                 case "range":
@@ -160,27 +162,22 @@ public class LFGBot implements EventListener {
                         if (temp.length < 2) return "-range *flag expects a number as second parameter, given non*";
                         search.setRange(Integer.parseInt(temp[1]));
                     } catch (final IllegalArgumentException e) {
-                        return "-range *flage expects a number, given *" + temp[1];
+                        return "-range *flage expects a number, given* " + temp[1];
                     }
+                    break;
                 case "delete":
                     if (save) return "-delete *and* -notify *are exclusive.\nYou may not use both*";
                     delete = true;
+                    break;
                 case "notify":
                     if (delete) return "-delete *and* -notify *are exclusive.\nYou may not use both*";
                     save = true;
+                    break;
                 default:
-                    return "*Unknown flag: *" + temp[0];
+                    return "*Unknown flag:* " + temp[0];
             }
         }
 
-        if (save) {
-            try {
-                DatabaseManager.inst().createSearch(search);
-            } catch (final SQLException e) {
-                e.printStackTrace();
-                return "***Could not create entry.\nPlease contact administrator.***";
-            }
-        }
         if (delete) {
             try {
                 DatabaseManager.inst().deleteSearches(id);
@@ -190,6 +187,7 @@ public class LFGBot implements EventListener {
                 return "***Could not delete entry(s).\nPlease contact administrator.***";
             }
         }
+
         final String returnV = //
                 DatabaseManager //
                         .inst() //
@@ -197,7 +195,17 @@ public class LFGBot implements EventListener {
                         .stream() //
                         .map(p -> p.toString()) //
                         .collect(Collectors.joining("\n\n"));
-        return returnV.isEmpty() ? "*No players found*" : returnV;
+
+        if (save) {
+            try {
+                DatabaseManager.inst().createSearch(search);
+            } catch (final SQLException e) {
+                e.printStackTrace();
+                return "***Could not create entry.\nPlease contact administrator.***";
+            }
+        }
+
+        return (returnV.isEmpty() ? "*No players found*" : returnV) + (save ? "\n\n*Search created*" : "");
     }
 
     /**
